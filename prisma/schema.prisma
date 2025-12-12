@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TicketStatus {
+  AVAILABLE
+  HOLD
+  PAID
+}
+
+enum BookingStatus {
+  HOLD
+  PAID
+  CANCELED
+  EXPIRED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  bookings  Booking[]
+  tickets   Ticket[]
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startAt     DateTime
+  endAt       DateTime
+  createdAt   DateTime @default(now())
+  tickets     Ticket[]
+}
+
+model Ticket {
+  id        String       @id @default(cuid())
+  eventId   String
+  event     Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  price     Int
+  status    TicketStatus @default(AVAILABLE)
+
+  holdById  String?
+  holdBy    User?        @relation(fields: [holdById], references: [id])
+  holdUntil DateTime?
+
+  bookingItems BookingItem[]
+  createdAt   DateTime @default(now())
+
+  @@index([eventId, status])
+  @@index([holdUntil])
+}
+
+model Booking {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    BookingStatus @default(HOLD)
+
+  total     Int           @default(0)
+  expiresAt DateTime?
+
+  items     BookingItem[]
+  createdAt DateTime @default(now())
+
+  @@index([status, expiresAt])
+}
+
+model BookingItem {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  ticketId  String
+  ticket    Ticket  @relation(fields: [ticketId], references: [id], onDelete: Restrict)
+
+  price     Int
+  createdAt DateTime @default(now())
+
+  @@unique([bookingId, ticketId])
+  @@unique([ticketId]) // 1 ticket chỉ thuộc 1 booking item
+}
