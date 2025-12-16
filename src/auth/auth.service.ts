@@ -38,4 +38,13 @@ export class AuthService {
         
         return { user: publicUser, accessToken };
     }
+
+    async registerAdmin(email: string, password: string) {
+        const user = await this.usersService.createAdmin(email, password);
+        const accessToken = await this.jwtService.signAsync({
+            sub: user.id,
+            role: user.role,
+        });
+        return { user, accessToken };
+    }
 }

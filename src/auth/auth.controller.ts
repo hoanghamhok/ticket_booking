@@ -3,6 +3,8 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { UsersService } from '../users/users.service';
+import { JwtService } from '@nestjs/jwt';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -26,5 +28,11 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto.email, loginDto.password);
+  }
+
+  @Post('register-admin')
+  @ApiOperation({ summary: 'Register admin user (for testing)' })
+  async registerAdmin(@Body()  registerDto: RegisterDto) {
+    return this.authService.registerAdmin(registerDto.email, registerDto.password);
   }
 }

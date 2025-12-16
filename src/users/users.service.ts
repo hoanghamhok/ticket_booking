@@ -26,5 +26,20 @@ export class UsersService {
     async findPublicUseryById(id:string){
         return this.prisma.user.findUnique({where:{id},select:{id:true,email:true,role:true,createdAt:true}});
     }
+
+    async createAdmin(email: string, password: string) {
+        const exist = await this.prisma.user.findUnique({ where: { email } });
+        if (exist) {
+            throw new ConflictException('Email already in use');
+        }
+        const hash = await bcrypt.hash(password, 10);
+        return this.prisma.user.create({
+            data: {
+                email,
+                password: hash,
+                role: 'ADMIN',  // Set role là ADMIN
+            },
+        });
+    }
 }
 

@@ -19,6 +19,7 @@ import { AppService } from './app.service';
     AuthModule,
     EventsModule,
     BookingsModule,
+    EventsModule,
   ],
   controllers: [],
   providers: [AppService],
