@@ -1,10 +1,8 @@
 
 import { Injectable,BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { HoldTicketDto } from '../bookings/dto/hold-ticket.dto.js';
-import {TicketStatus,BookingStatus } from '../generated/prisma/enums.js'
-import Prisma from '@prisma/client';
-
+import { PrismaService } from '../prisma/prisma.service';
+import { HoldTicketDto } from '../bookings/dto/hold-ticket.dto';
+import { TicketStatus, BookingStatus } from '@prisma/client';
 @Injectable()
 export class BookingsService {
     constructor(private prisma: PrismaService) {}

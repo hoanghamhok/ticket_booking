@@ -1,9 +1,7 @@
 import {Injectable,Logger} from '@nestjs/common';
 import {Cron} from '@nestjs/schedule';
-import {BookingStatus,TicketStatus} from '../generated/prisma/enums.js';
-import {PrismaService} from 'src/prisma/prisma.service.js';
-
-@Injectable()
+import {PrismaService} from 'src/prisma/prisma.service';
+import { TicketStatus, BookingStatus } from '@prisma/client';
 
 export class BookingExpirationJob{
     private readonly logger = new Logger(BookingExpirationJob.name);

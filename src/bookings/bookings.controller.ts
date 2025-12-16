@@ -1,7 +1,7 @@
 import { Controller,Get,Body,Post,Req,UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
-import  {BookingsService} from '../bookings/bookings.service.js'
-import { HoldTicketDto } from '../bookings/dto/hold-ticket.dto.js';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import  {BookingsService} from '../bookings/bookings.service'
+import { HoldTicketDto } from '../bookings/dto/hold-ticket.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Bookings')
