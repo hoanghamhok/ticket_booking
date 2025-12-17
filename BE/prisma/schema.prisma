@@ -24,6 +24,7 @@ model Event {
   startAt     DateTime
   endAt       DateTime
   createdAt   DateTime @default(now())
+  imageUrl    String?  // ✅ thêm dòng này
   tickets     Ticket[]
 }
 
@@ -77,6 +78,7 @@ enum TicketStatus {
   AVAILABLE
   HOLD
   PAID
+  CANCELED
 }
 
 enum BookingStatus {
@@ -84,4 +86,5 @@ enum BookingStatus {
   PAID
   CANCELED
   EXPIRED
+  REFUNDED
 }

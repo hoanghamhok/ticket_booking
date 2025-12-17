@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsDateString, IsNotEmpty } from 'class-validator';
+import { IsString, IsOptional, IsDateString, IsNotEmpty, IsUrl } from 'class-validator';
 
 export class CreateEventDto {
   @ApiProperty({ example: 'Concert 2025' })
@@ -21,4 +21,13 @@ export class CreateEventDto {
   @IsNotEmpty()
   @IsDateString()
   endAt: string;
+
+  @ApiProperty({
+    example: 'https://res.cloudinary.com/xxx/image/upload/v123/events/abc.jpg',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @IsUrl()
+  imageUrl?: string;
 }

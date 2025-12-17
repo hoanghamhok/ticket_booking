@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards,UploadedFile,BadRequestException,UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -7,6 +7,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/role.guard';
 import { Roles } from '../auth/decorators/role.decorator';
 import { Role } from '@prisma/client';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Events')
 @Controller('events')
@@ -76,5 +77,19 @@ export class EventsController {
   @ApiResponse({ status: 404, description: 'Event not found' })
   remove(@Param('id') id: string) {
     return this.eventsService.remove(id);
+  }
+
+  @Post(':id/image')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadEventImage(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new BadRequestException('Missing file');
+    if (!file.mimetype?.startsWith('image/')) {
+      throw new BadRequestException('File must be an image');
+    }
+
+    return this.eventsService.uploadEventImage(id, file);
   }
 }

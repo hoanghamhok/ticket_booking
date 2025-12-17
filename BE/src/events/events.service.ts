@@ -1,11 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+
 
 @Injectable()
 export class EventsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService,
+              private readonly cloudinary:CloudinaryService
+  ) {}
 
   async create(createEventDto: CreateEventDto) {
     return this.prisma.event.create({
@@ -66,22 +70,50 @@ export class EventsService {
   }
 
   async update(id: string, updateEventDto: UpdateEventDto) {
-    await this.findOne(id); // Check if exists
-
+    await this.findOne(id); // check exists
+  
     return this.prisma.event.update({
       where: { id },
       data: {
-        ...(updateEventDto.title && { title: updateEventDto.title }),
-        ...(updateEventDto.description !== undefined && { description: updateEventDto.description }),
-        ...(updateEventDto.startAt && { startAt: new Date(updateEventDto.startAt) }),
-        ...(updateEventDto.endAt && { endAt: new Date(updateEventDto.endAt) }),
+        ...(updateEventDto.title && {
+          title: updateEventDto.title,
+        }),
+  
+        ...(updateEventDto.description !== undefined && {
+          description: updateEventDto.description,
+        }),
+  
+        ...(updateEventDto.startAt && {
+          startAt: new Date(updateEventDto.startAt),
+        }),
+  
+        ...(updateEventDto.endAt && {
+          endAt: new Date(updateEventDto.endAt),
+        }),
+  
+        // ✅ NEW: xử lý imageUrl
+        ...(updateEventDto.imageUrl !== undefined && {
+          imageUrl: updateEventDto.imageUrl,
+        }),
       },
     });
   }
 
   async remove(id: string) {
     await this.findOne(id); // Check if exists
-
+    const bookingCount = await this.prisma.bookingItem.count({
+      where: {
+        ticket: {
+          eventId: id,
+        },
+      },
+    });
+    
+    if (bookingCount > 0) {
+      throw new ConflictException(  
+        'Không thể xóa sự kiện vì đã có vé được đặt'
+      );
+    }
     return this.prisma.event.delete({
       where: { id },
     });
@@ -95,5 +127,23 @@ export class EventsService {
         status: 'AVAILABLE',
       },
     });
+  }
+
+  async uploadEventImage(eventId: string, file: Express.Multer.File) {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) throw new NotFoundException('Event not found');
+
+    const uploaded = await this.cloudinary.uploadBuffer(file.buffer, {
+      folder: 'ticket-booking/events',
+      public_id: `event_${eventId}`,
+    });
+
+    const updated = await this.prisma.event.update({
+      where: { id: eventId },
+      // Cast to any to bypass type mismatch if Prisma types lag behind schema changes
+      data: { imageUrl: uploaded.url } as any,
+    });
+
+    return updated; // trả về event mới có imageUrl
   }
 }

@@ -9,6 +9,8 @@ import { BookingsModule } from './bookings/bookings.module';
 import { AppService } from './app.service';
 import { TicketsModule } from './tickets/tickets.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { UploadsModule } from './uploads/uploads.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 @Module({
   imports: [
     // Nạp biến môi trường từ file .env
@@ -21,6 +23,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     BookingsModule,
     EventsModule,
     TicketsModule,
+    UploadsModule,
+    CloudinaryModule
   ],
   controllers: [],
   providers: [AppService],
