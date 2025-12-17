@@ -27,6 +27,12 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(3000);
+  app.enableCors({
+    origin: 'http://localhost:3000',  // CRA mặc định port 3000
+    credentials: true,
+  });
+
+  await app.listen(4000);
 }
+
 bootstrap();
