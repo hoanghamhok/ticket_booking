@@ -3,6 +3,9 @@ import { Injectable,BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { HoldTicketDto } from '../bookings/dto/hold-ticket.dto';
 import { TicketStatus, BookingStatus } from '@prisma/client';
+import { ForbiddenException,InternalServerErrorException } from '@nestjs/common';
+
+
 @Injectable()
 export class BookingsService {
     constructor(private prisma: PrismaService) {}
@@ -81,5 +84,43 @@ export class BookingsService {
             },
         });
     }
+
+    async payBooking(userId: string, bookingId: string) {
+        const now = new Date();
+      
+        return this.prisma.$transaction(async (tx) => {
+          const booking = await tx.booking.findUnique({
+            where: { id: bookingId },
+            include: { items: true },
+          });
+          if (!booking) throw new BadRequestException('Booking not found');
+          if (booking.userId !== userId) throw new ForbiddenException();
+          if (booking.status !== BookingStatus.HOLD) throw new BadRequestException('Booking is not HOLD');
+          if (booking.expiresAt && booking.expiresAt <= now) throw new BadRequestException('Booking expired');
+      
+          const ticketIds = booking.items.map((i) => i.ticketId);
+      
+          // Ticket phải đang HOLD và holdById đúng user
+          const updated = await tx.ticket.updateMany({
+            where: {
+              id: { in: ticketIds },
+              status: TicketStatus.HOLD,
+              holdById: userId,
+              holdUntil: { gt: now },
+            },
+            data: { status: TicketStatus.PAID },
+          });
+      
+          if (updated.count !== ticketIds.length) {
+            throw new BadRequestException('Some tickets are no longer held. Please try again.');
+          }
+      
+          return tx.booking.update({
+            where: { id: bookingId },
+            data: { status: BookingStatus.PAID },
+            include: { items: true },
+          });
+        });
+      }
 
 }

@@ -7,19 +7,20 @@ import { AuthModule } from './auth/auth.module';
 import { EventsModule } from './events/events.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { AppService } from './app.service';
-
+import { TicketsModule } from './tickets/tickets.module';
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     // Nạp biến môi trường từ file .env
-    ConfigModule.forRoot({
-      isGlobal: true, // để có thể dùng ở mọi module mà không cần import lại
-    }),
+    ConfigModule.forRoot({isGlobal: true, }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     UsersModule,
     AuthModule,
     EventsModule,
     BookingsModule,
     EventsModule,
+    TicketsModule,
   ],
   controllers: [],
   providers: [AppService],

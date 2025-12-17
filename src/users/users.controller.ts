@@ -18,6 +18,13 @@ export class UsersController {
     return this.usersService.findPublicUseryById(req.user.userId);
   }
 
+  @Get('all')
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({ status: 200, description: 'Returns all users' })
+  async getAllUsers() {
+    return this.usersService.findAllUsers();
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
@@ -27,4 +34,6 @@ export class UsersController {
   async getUserById(@Param('id') id: string) {
     return this.usersService.findPublicUseryById(id);
   }
+
+  
 }

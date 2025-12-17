@@ -27,6 +27,10 @@ export class UsersService {
         return this.prisma.user.findUnique({where:{id},select:{id:true,email:true,role:true,createdAt:true}});
     }
 
+    async findAllUsers(){
+        return this.prisma.user.findMany({select:{id:true,email:true,role:true,createdAt:true}});
+    }
+
     async createAdmin(email: string, password: string) {
         const exist = await this.prisma.user.findUnique({ where: { email } });
         if (exist) {
